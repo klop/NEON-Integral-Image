@@ -7,22 +7,26 @@
 //
 
 #include <stdio.h>
+#include <string.h>
 #include <arm_neon.h>
 
 void neon_integral_image(const uint8_t *sourceImage, uint32_t *integralImage,
                          size_t width, size_t height)
 {
-    // a vector used later for shifting bytes and replacing with 0 using vector extraction
-    uint16x8_t zeroVec = vdupq_n_u16(0);
-
     // integral images add an extra row and column of 0s to the image
     size_t integralImageWidth = width + 1;
+
+    // 0 out the first row
+    memset(integralImage, 0, sizeof(integralImage[0]) * integralImageWidth);
 
     // pointer to the start of the integral image, skipping past the first row and column
     uint32_t *integralImageStart = integralImage + integralImageWidth + 1;
 
     //  used to carry over the last prefix sum of a row segment to the next segment
     uint32_t prefixSumLastElement = 0;
+
+    // a vector used later for shifting bytes and replacing with 0 using vector extraction
+    uint16x8_t zeroVec = vdupq_n_u16(0);
 
     // prefix sum for rows
     for (size_t i = 0; i < height; ++i) {
@@ -35,6 +39,9 @@ void neon_integral_image(const uint8_t *sourceImage, uint32_t *integralImage,
 
         // from the integral image start, this gives us an offset to the beginning of the next row, skipping the 0 column
         size_t integralRowOffset = i * integralImageWidth;
+
+        // 0 out the start of every row, starting from the 2nd
+        integralImage[integralImageWidth + integralRowOffset] = 0;
 
         // count how many bytes we've passed over
         size_t j = 0;
