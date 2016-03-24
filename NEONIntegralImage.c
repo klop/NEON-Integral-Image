@@ -7,7 +7,7 @@
 //
 
 #include <stdio.h>
-#import <arm_neon.h>
+#include <arm_neon.h>
 
 void neon_integral_image(const uint8_t *sourceImage, uint32_t *integralImage,
                          size_t width, size_t height)
